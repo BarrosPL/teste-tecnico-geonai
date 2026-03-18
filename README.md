@@ -8,10 +8,10 @@ no back-end e Next.js + TypeScript + Tailwind CSS no front-end.
 ### Backend
 
 1. cd backend
-2. python -m venv .venv
-3. .venv\Scripts\Activate(Windows)
-4. pip install -r requirements.txt
-5. uvicorn app.main:app --reload
+2. python -m venv .venv : Inicie o ambiente virtual.
+3. .venv\Scripts\Activate(Windows) ou source .venv/bin/activate (Linux/Mac): Ative o ambiente virtual.
+4. pip install -r requirements.txt: Instale as dependencias do back-end.
+5. uvicorn app.main:app --reload : Inicie o servidor back-end.
 
 Acesse: http://localhost:8000
 
@@ -22,10 +22,9 @@ http://localhost:8000/docs
 
 ### Frontend
 
-1. cd frontend
-2. npm install
-3. criar .env.local com: NEXT_PUBLIC_API_URL=http://localhost:8000
-4. npm run dev
+1. cd frontend: Entre na pasta do front-end.
+2. npm install : Instale as dependencias do front-end.
+3. npm run dev : Inicie o front-end.
 
 Acesse: http://localhost:3000
 
