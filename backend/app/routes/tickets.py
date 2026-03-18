@@ -47,3 +47,31 @@ def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
 def list_tickets(db: Session = Depends(get_db)):
     tickets = db.query(Ticket).order_by(Ticket.created_at.desc()).all()
     return [serialize_ticket(ticket) for ticket in tickets]
+
+@router.put("/{ticket_id}", response_model=TicketResponse)
+def update_ticket(ticket_id: int, payload: TicketUpdate, db: Session = Depends(get_db)):
+    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket não encontrado.")
+
+    ticket.title = payload.title
+    ticket.description = payload.description
+    ticket.priority = payload.priority
+    ticket.status = payload.status
+
+    db.commit()
+    db.refresh(ticket)
+
+    return serialize_ticket(ticket)
+
+
+@router.delete("/{ticket_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_ticket(ticket_id: int, db: Session = Depends(get_db)):
+    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket não encontrado.")
+
+    db.delete(ticket)
+    db.commit()    
