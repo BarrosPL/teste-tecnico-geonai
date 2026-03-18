@@ -40,3 +40,7 @@ Funcionalidades
 Observação
 
 Banco SQLite com criação automática (sem migrations)
+
+
+
+Reposta Pergunta Relacionado a Suporte: Inicialmente eu analisaria os logs do servidor para buscar as exceções relacionadas ao erro o qual estaria ocorrendo, tendo esses logs eu iria verificar a origem do erro, se ele pode estar relacionado a banco de dados, inconsistencias entre o payload, schemas ou models ou se estaria relacionado a propria lógica da aplicação, desse modo eu utiliziria de ferramentas como swagger e postman para realizar verificação nos endpoints, tendo a causa do erro eu aplicaria a correção, garantindo a consistencia entre processamento, entrada e a resposta da API.
