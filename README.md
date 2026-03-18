@@ -69,13 +69,13 @@ Fluxo o qual eu Criaria.
 ### Exemplo de mensagem enviada
 
 Novo ticket de prioridade ALTA criado  
-ID:02  
-Título: Site do Fulano da Silva esta fora do ar e apresenta erro 404.  
-Prioridade: Alta  
-Status: Aberto  
-Criado em: 18/03/2026 14:30  
-Descrição: Cliente relata que o seu site esta fora do ar, e ao tentar acessar no navegador é exibido erro 404, pagina não encontrada.  
-Prazo de Resolução: 18/03/2026 18:30  
+ -ID:02  
+ -Título: Site do Fulano da Silva esta fora do ar e apresenta erro 404.  
+ -Prioridade: Alta  
+ -Status: Aberto  
+ -Criado em: 18/03/2026 14:30  
+ -Descrição: Cliente relata que o seu site esta fora do ar, e ao tentar acessar no navegador é exibido erro 404, pagina não encontrada.  
+ -Prazo de Resolução: 18/03/2026 18:30  
 
 ---
 
