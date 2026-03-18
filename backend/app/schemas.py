@@ -12,10 +12,10 @@ class TicketCreate(BaseModel):
     status: StatusEnum = StatusEnum.ABERTO
 
 class TicketUpdate(BaseModel):
-    title: str = Field(..., min_length=3, max_length=120)
-    description: str = Field(..., min_length=5, max_length=1000)
-    priority: PriorityEnum
-    status: StatusEnum
+    title: str | None = None
+    description: str | None = None
+    priority: PriorityEnum | None = None
+    status: StatusEnum | None = None
 
 
 class TicketResponse(BaseModel):

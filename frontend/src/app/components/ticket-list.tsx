@@ -3,7 +3,11 @@ import { Ticket } from "../tickets-page";
 type Props = {
   tickets: Ticket[];
   loading: boolean;
+  onEdit: (ticket: Ticket) => void;
+  onDeleteSuccess: () => void;
 };
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 function priorityStyles(priority: Ticket["priority"]) {
   switch (priority) {
@@ -43,7 +47,35 @@ function statusBadge(status: Ticket["status"]) {
   }
 }
 
-export default function TicketList({ tickets, loading }: Props) {
+export default function TicketList({
+  tickets,
+  loading,
+  onEdit,
+  onDeleteSuccess,
+}: Props) {
+  async function handleDelete(ticketId: number) {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir este ticket?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao excluir ticket");
+      }
+
+      onDeleteSuccess();
+    } catch (error) {
+      console.error(error);
+      alert("Não foi possível excluir o ticket.");
+    }
+  }
+
   if (loading) {
     return <p className="text-slate-800">Carregando tickets...</p>;
   }
@@ -84,8 +116,7 @@ export default function TicketList({ tickets, loading }: Props) {
 
             <p className="mb-3 text-slate-700">{ticket.description}</p>
 
-            <div className="flex flex-wrap gap-2 text-sm">
-              {/* Badge de prioridade */}
+            <div className="mb-4 flex flex-wrap gap-2 text-sm">
               <span
                 className={`rounded-full px-3 py-1 font-medium ${styles.badge}`}
               >
@@ -98,6 +129,24 @@ export default function TicketList({ tickets, loading }: Props) {
                   {new Date(ticket.prazo_resolucao).toLocaleString("pt-BR")}
                 </span>
               )}
+            </div>
+
+            <div className="flex gap-2 ">
+              <button
+                type="button"
+                onClick={() => onEdit(ticket)}
+                className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                Editar
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDelete(ticket.id)}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+              >
+                Excluir
+              </button>
             </div>
           </article>
         );

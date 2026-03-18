@@ -1,20 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Ticket } from "../tickets-page";
 
 type Props = {
-  onCreated: () => void;
+  onSuccess: () => void;
+  editingTicket: Ticket | null;
+  onCancelEdit: () => void;
 };
 
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export default function TicketForm({ onCreated }: Props) {
+export default function TicketForm({
+  onSuccess,
+  editingTicket,
+  onCancelEdit,
+}: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("Baixa");
-  const [status, setStatus] = useState("Aberto");
+  const [priority, setPriority] = useState<Ticket["priority"]>("Baixa");
+  const [status, setStatus] = useState<Ticket["status"]>("Aberto");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const isEditing = !!editingTicket;
+
+  useEffect(() => {
+    if (editingTicket) {
+      setTitle(editingTicket.title);
+      setDescription(editingTicket.description);
+      setPriority(editingTicket.priority);
+      setStatus(editingTicket.status);
+      setError("");
+      return;
+    }
+
+    setTitle("");
+    setDescription("");
+    setPriority("Baixa");
+    setStatus("Aberto");
+    setError("");
+  }, [editingTicket]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,21 +59,46 @@ export default function TicketForm({ onCreated }: Props) {
     try {
       setSubmitting(true);
 
-      const response = await fetch(`${API_URL}/tickets`, {
-        method: "POST",
+      const url =
+        isEditing && editingTicket
+          ? `${API_URL}/tickets/${editingTicket.id}`
+          : `${API_URL}/tickets`;
+
+      const method = isEditing ? "PUT" : "POST";
+
+      const payload = {
+        title: title.trim(),
+        description: description.trim(),
+        priority,
+        status,
+      };
+
+      console.log("Payload enviado:", payload);
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          title,
-          description,
-          priority,
-          status,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao criar ticket");
+        let errorBody: unknown = null;
+
+        try {
+          errorBody = await response.json();
+        } catch {
+          errorBody = await response.text();
+        }
+
+        console.error("Erro da API:", errorBody);
+
+        throw new Error(
+          typeof errorBody === "string"
+            ? errorBody
+            : JSON.stringify(errorBody)
+        );
       }
 
       setTitle("");
@@ -55,10 +106,16 @@ export default function TicketForm({ onCreated }: Props) {
       setPriority("Baixa");
       setStatus("Aberto");
 
-      await onCreated();
+      onSuccess();
     } catch (err) {
-      setError("Falha ao criar ticket na API.");
       console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : isEditing
+            ? "Falha ao atualizar ticket na API."
+            : "Falha ao criar ticket na API."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -69,33 +126,53 @@ export default function TicketForm({ onCreated }: Props) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
     >
-      <h2 className="mb-4 text-xl font-semibold text-slate-800">Novo Ticket</h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold text-slate-800">
+          {isEditing ? "Editar Ticket" : "Novo Ticket"}
+        </h2>
+
+        {isEditing && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+        )}
+      </div>
 
       <div className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-800">Título</label>
+          <label className="mb-1 block text-sm font-medium text-slate-800">
+            Título
+          </label>
           <input
-            className="w-full rounded-xl border border-slate-300 text-slate-800 px-4 py-3 outline-none focus:border-slate-500"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-800 outline-none focus:border-slate-500"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-800">Descrição</label>
+          <label className="mb-1 block text-sm font-medium text-slate-800">
+            Descrição
+          </label>
           <textarea
-            className="min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none text-slate-800 focus:border-slate-500"
+            className="min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-800 outline-none focus:border-slate-500"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-800">Prioridade</label>
+          <label className="mb-1 block text-sm font-medium text-slate-800">
+            Prioridade
+          </label>
           <select
             className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-800"
             value={priority}
-            onChange={(e) => setPriority(e.target.value)}
+            onChange={(e) => setPriority(e.target.value as Ticket["priority"])}
           >
             <option>Baixa</option>
             <option>Média</option>
@@ -104,11 +181,13 @@ export default function TicketForm({ onCreated }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-800">Status</label>
+          <label className="mb-1 block text-sm font-medium text-slate-800">
+            Status
+          </label>
           <select
-            className="w-full rounded-xl border border-slate-300 text-slate-800 px-4 py-3"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-800"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => setStatus(e.target.value as Ticket["status"])}
           >
             <option>Aberto</option>
             <option>Em Análise</option>
@@ -116,14 +195,20 @@ export default function TicketForm({ onCreated }: Props) {
           </select>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 break-words">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-xl bg-slate-900 px-4 py-3 font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+          className="w-full rounded-xl bg-slate-900 px-4 py-3 font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
         >
-          {submitting ? "Criando..." : "Criar ticket"}
+          {submitting
+            ? isEditing
+              ? "Salvando..."
+              : "Criando..."
+            : isEditing
+              ? "Salvar alterações"
+              : "Criar ticket"}
         </button>
       </div>
     </form>

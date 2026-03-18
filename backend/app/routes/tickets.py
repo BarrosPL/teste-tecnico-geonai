@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Ticket, PriorityEnum
-from app.schemas import TicketCreate, TicketResponse
+from app.schemas import TicketCreate, TicketResponse, TicketUpdate
 
 router = APIRouter(prefix="/tickets", tags=["Tickets"])
 

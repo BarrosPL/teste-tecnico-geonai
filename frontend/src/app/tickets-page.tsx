@@ -15,13 +15,14 @@ export type Ticket = {
   prazo_resolucao?: string | null;
 };
 
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function TicketPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
 
   async function loadTickets() {
     try {
@@ -52,8 +53,12 @@ export default function TicketPage() {
   }, []);
 
   const filteredTickets = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    if (!term) return tickets;
+
     return tickets.filter((ticket) =>
-      ticket.title.toLowerCase().includes(search.toLowerCase())
+      ticket.title.toLowerCase().includes(term)
     );
   }, [tickets, search]);
 
@@ -65,7 +70,14 @@ export default function TicketPage() {
         </h1>
 
         <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-          <TicketForm onCreated={loadTickets} />
+          <TicketForm
+            onSuccess={() => {
+              loadTickets();
+              setEditingTicket(null);
+            }}
+            editingTicket={editingTicket}
+            onCancelEdit={() => setEditingTicket(null)}
+          />
 
           <section className="space-y-4">
             <TicketFilter value={search} onChange={setSearch} />
@@ -76,7 +88,15 @@ export default function TicketPage() {
               </div>
             )}
 
-            <TicketList tickets={filteredTickets} loading={loading} />
+            <TicketList
+              tickets={filteredTickets}
+              loading={loading}
+              onEdit={setEditingTicket}
+              onDeleteSuccess={() => {
+                loadTickets();
+                setEditingTicket(null);
+              }}
+            />
           </section>
         </div>
       </div>
