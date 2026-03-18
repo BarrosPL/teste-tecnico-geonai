@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Mini Sistema de Chamados",
   description: "Sistema de tickets com Next.js, Tailwind e FastAPI",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
